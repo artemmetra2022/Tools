@@ -1,8 +1,19 @@
 # Build fix
 
-The original project did not contain `gradle/wrapper/gradle-wrapper.jar`. The CI fallback generated a wrapper with the runner's installed Gradle 9.7.1, while this project uses the older NeoGradle userdev 7.0.x toolchain.
+The project uses NeoGradle `7.0.192`. This NeoGradle release publishes Gradle plugin variants for Gradle `8.13`, so running the project with Gradle `8.8` causes the `No matching variant` error and reports `org.gradle.plugin.api-version = 8.13`.
 
-That caused:
-`org.gradle.api.problems.ProblemReporter ... Problems.forNamespace(java.lang.String)`
+The CI workflow and Gradle wrapper are therefore pinned to Gradle `8.13` while Java remains 21.
 
-The fixed project pins Gradle 8.8 in CI and keeps the wrapper distribution on Gradle 8.8. The build workflow does not depend on the missing wrapper JAR.
+Run locally with:
+
+```bash
+./gradlew --no-daemon build
+```
+
+or, if using an installed Gradle:
+
+```bash
+gradle --no-daemon build
+```
+
+with Gradle 8.13.

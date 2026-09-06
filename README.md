@@ -206,10 +206,10 @@ clearitems-mod/
 workflow сам проверяет его наличие и при отсутствии генерирует через
 официальный `gradle/actions/setup-gradle`. Если вы хотите собирать
 мод **локально**, самый простой способ — один раз выполнить (при
-наличии установленного Gradle 8.8+):
+наличии установленного Gradle 8.13+):
 
 ```bash
-gradle wrapper --gradle-version 8.8
+gradle wrapper --gradle-version 8.13
 ```
 
 Это создаст недостающий `gradle-wrapper.jar`, после чего `./gradlew build`
