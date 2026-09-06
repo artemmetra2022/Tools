@@ -1,0 +1,131 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.neoforged.gradle.userdev' version '7.0.165'
+}
+
+version = '1.0.0'
+group = 'com.example.clearitems'
+
+base {
+    archivesName = 'clearitems'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// Уменьшаем уровень логирования при билде (по желанию)
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+
+    // Официальный maven Create (Ponder, Flywheel и т.д.)
+    maven {
+        name = "CreateMod"
+        url = "https://maven.createmod.net"
+    }
+
+    // CurseMaven - позволяет подключать моды с CurseForge как обычные maven-зависимости
+    maven {
+        name = "CurseMaven"
+        url = "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+
+    // Modrinth maven - альтернативный источник Create, на случай проблем с CurseMaven
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client {
+            client()
+            gameDirectory = project.file('run')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            gameDirectory = project.file('run/server')
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            data()
+            gameDirectory = project.file('run')
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', ''
+            systemProperty 'forge.logging.console.level', 'debug'
+            modSource project.sourceSets.main
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+dependencies {
+    // Основная зависимость NeoForge подключается через neoForge { version = ... }
+
+    // Зависимость от мода Create (нужна для взаимодействия с контрапшнами:
+    // AbstractContraptionEntity, MechanicalBearingBlock и т.д.)
+    // ID файла берётся из gradle.properties (create_curseforge_file_id) —
+    // при обновлении Create на новую версию 1.21.1 достаточно поменять
+    // это значение, взяв актуальный File ID со страницы:
+    // https://www.curseforge.com/minecraft/mc-mods/create/files
+    implementation "curse.maven:create-328085:${create_curseforge_file_id}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+        minecraft_version: project.minecraft_version,
+        minecraft_version_range: project.minecraft_version_range,
+        neo_version: project.neo_version,
+        neo_version_range: project.neo_version_range,
+        loader_version_range: project.loader_version_range,
+        mod_id: project.mod_id,
+        mod_name: project.mod_name,
+        mod_license: project.mod_license,
+        mod_version: project.mod_version,
+        mod_authors: project.mod_authors,
+        mod_description: project.mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
+}

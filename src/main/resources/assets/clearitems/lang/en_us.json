@@ -1,0 +1,12 @@
+{
+  "item.clearitems.wand_of_clearing": "Wand of Clearing",
+  "item.clearitems.wand_of_clearing.tooltip": "Removes dropped items on the ground near the clicked spot.",
+  "item.clearitems.wand_of_clearing.tooltip.radius": "Radius: %s blocks",
+  "item.clearitems.wand_of_clearing.tooltip.hint": "Shift+Right-click in the air to change radius",
+
+  "item.clearitems.freeze_wand": "Freeze Wand",
+  "item.clearitems.freeze_wand.tooltip": "Stops and disassembles a Create contraption into blocks.",
+  "item.clearitems.freeze_wand.tooltip.radius": "Search radius: %s blocks",
+  "item.clearitems.freeze_wand.tooltip.pending": "A contraption is highlighted - confirm or cancel",
+  "item.clearitems.freeze_wand.tooltip.hint": "Right-click to highlight, right-click again to disassemble"
+}

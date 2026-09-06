@@ -1,0 +1,12 @@
+{
+  "item.clearitems.wand_of_clearing": "Жезл Очистки",
+  "item.clearitems.wand_of_clearing.tooltip": "Удаляет предметы с земли вокруг точки клика.",
+  "item.clearitems.wand_of_clearing.tooltip.radius": "Радиус: %s блоков",
+  "item.clearitems.wand_of_clearing.tooltip.hint": "Shift+ПКМ в воздухе — сменить радиус",
+
+  "item.clearitems.freeze_wand": "Жезл Заморозки",
+  "item.clearitems.freeze_wand.tooltip": "Останавливает и разбирает конструкцию Create в блоки.",
+  "item.clearitems.freeze_wand.tooltip.radius": "Радиус поиска: %s блоков",
+  "item.clearitems.freeze_wand.tooltip.pending": "Есть подсвеченная цель — подтвердите или отмените",
+  "item.clearitems.freeze_wand.tooltip.hint": "ПКМ — подсветить, ПКМ ещё раз — разобрать"
+}
