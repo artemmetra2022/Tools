@@ -1,18 +1,22 @@
 package com.example.clearitems;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
 /**
- * Команда /clear1 — удаляет все предметы (ItemEntity), лежащие на земле,
- * во всех загруженных измерениях сервера. Эквивалент /kill @e[type=item].
+ * Команда /clear1 — удаляет предметы (ItemEntity), лежащие на земле.
+ * Без аргументов — во всех загруженных измерениях сервера (эквивалент /kill @e[type=item]).
+ * С аргументом /clear1 radius <N> — только в радиусе N блоков вокруг вызвавшего,
+ * в его текущем измерении (сферой, не кубом).
  */
 public class ClearItemsCommand {
 
@@ -22,6 +26,8 @@ public class ClearItemsCommand {
                         // требуем права оператора (уровень 2, как у большинства игровых команд)
                         .requires(source -> source.hasPermission(2))
                         .executes(ClearItemsCommand::execute)
+                        .then(Commands.argument("radius", IntegerArgumentType.integer(1))
+                                .executes(ClearItemsCommand::executeWithRadius))
         );
     }
 
@@ -34,7 +40,7 @@ public class ClearItemsCommand {
             List<ItemEntity> items = level.getEntitiesOfClass(
                     ItemEntity.class,
                     // Бесконечный (очень большой) AABB, чтобы захватить все предметы в мире
-                    net.minecraft.world.phys.AABB.INFINITE
+                    AABB.INFINITE
             );
 
             for (ItemEntity item : items) {
@@ -50,5 +56,37 @@ public class ClearItemsCommand {
         );
 
         return totalRemoved;
+    }
+
+    /** /clear1 radius <N> — удаляет предметы в радиусе N блоков вокруг вызвавшего, в его измерении. */
+    private static int executeWithRadius(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        int radius = IntegerArgumentType.getInteger(context, "radius");
+        Vec3 center = source.getPosition();
+        ServerLevel level = source.getLevel();
+
+        AABB searchBox = new AABB(
+                center.x - radius, center.y - radius, center.z - radius,
+                center.x + radius, center.y + radius, center.z + radius
+        );
+
+        List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, searchBox);
+
+        int removed = 0;
+        for (ItemEntity item : items) {
+            // AABB — куб, а нам нужна сфера: проверяем точное расстояние
+            if (item.position().distanceToSqr(center) <= (double) radius * radius) {
+                item.discard();
+                removed++;
+            }
+        }
+
+        int finalCount = removed;
+        source.sendSuccess(
+                () -> Component.literal("Удалено предметов с земли (радиус " + radius + "): " + finalCount),
+                true
+        );
+
+        return removed;
     }
 }

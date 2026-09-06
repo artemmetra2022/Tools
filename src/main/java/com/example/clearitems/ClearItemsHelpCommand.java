@@ -37,6 +37,7 @@ public class ClearItemsHelpCommand {
 
         send(source, "Команды", ChatFormatting.YELLOW, true);
         send(source, "  /clear1 — удалить все предметы на земле во всём мире (требует прав оператора).", ChatFormatting.GRAY, false);
+        send(source, "  /clear1 radius <N> — удалить предметы только в радиусе N блоков вокруг вас.", ChatFormatting.GRAY, false);
         send(source, "  /clearitemshelp — показать эту справку.", ChatFormatting.GRAY, false);
 
         return 1;
