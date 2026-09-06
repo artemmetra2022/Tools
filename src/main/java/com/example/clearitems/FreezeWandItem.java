@@ -3,6 +3,7 @@ package com.example.clearitems;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -69,8 +71,8 @@ public class FreezeWandItem extends Item {
         tooltip.add(Component.translatable("item.clearitems.freeze_wand.tooltip.radius", getRadius(stack))
                 .withStyle(ChatFormatting.AQUA));
 
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.hasUUID("FreezeTarget")) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (tag.hasUUID("FreezeTarget")) {
             // Точное время истечения окна подтверждения знает только сервер,
             // поэтому в тултипе — просто общий индикатор "возможно есть цель"
             tooltip.add(Component.translatable("item.clearitems.freeze_wand.tooltip.pending")
@@ -83,15 +85,15 @@ public class FreezeWandItem extends Item {
     }
 
     public static int getRadius(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(NBT_RADIUS)) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (tag.contains(NBT_RADIUS)) {
             return tag.getInt(NBT_RADIUS);
         }
         return DEFAULT_RADIUS;
     }
 
     private static void setRadius(ItemStack stack, int radius) {
-        stack.getOrCreateTag().putInt(NBT_RADIUS, radius);
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(NBT_RADIUS, radius));
     }
 
     private static int nextRadius(int current) {
@@ -142,26 +144,25 @@ public class FreezeWandItem extends Item {
 
     /** Есть ли у стака ещё не истёкшая ожидающая подтверждения цель. */
     private static boolean hasActiveTarget(ItemStack stack, long now) {
-        CompoundTag tag = stack.getTag();
-        return tag != null
-                && tag.hasUUID("FreezeTarget")
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        return tag.hasUUID("FreezeTarget")
                 && (now - tag.getLong("FreezeTargetTick")) <= CONFIRM_WINDOW_TICKS;
     }
 
-    /** Снимает Glowing с подсвеченного контрапшна (если он ещё существует) и чистит NBT. */
+    /** Снимает Glowing с подсвеченного контрапшна (если он ещё существует) и чистит данные цели. */
     private static void cancelPendingTarget(ItemStack stack, Level level) {
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.hasUUID("FreezeTarget") && level instanceof ServerLevel serverLevel) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (tag.hasUUID("FreezeTarget") && level instanceof ServerLevel serverLevel) {
             UUID targetId = tag.getUUID("FreezeTarget");
             Entity target = serverLevel.getEntity(targetId);
             if (target != null) {
                 target.setGlowingTag(false);
             }
         }
-        if (tag != null) {
-            tag.remove("FreezeTarget");
-            tag.remove("FreezeTargetTick");
-        }
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> {
+            t.remove("FreezeTarget");
+            t.remove("FreezeTargetTick");
+        });
     }
 
     @Override
@@ -208,15 +209,17 @@ public class FreezeWandItem extends Item {
         UUID targetId = closest.getUUID();
         long now = level.getGameTime();
 
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         boolean hasPendingTarget = tag.hasUUID("FreezeTarget")
                 && tag.getUUID("FreezeTarget").equals(targetId)
                 && (now - tag.getLong("FreezeTargetTick")) <= CONFIRM_WINDOW_TICKS;
 
         if (!hasPendingTarget) {
             // ШАГ 1: подсветка, без разборки
-            tag.putUUID("FreezeTarget", targetId);
-            tag.putLong("FreezeTargetTick", now);
+            CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> {
+                t.putUUID("FreezeTarget", targetId);
+                t.putLong("FreezeTargetTick", now);
+            });
 
             applyGlow(closest, (int) CONFIRM_WINDOW_TICKS);
             spawnFrostParticles(serverLevel, closest.position(), 30);
@@ -240,8 +243,10 @@ public class FreezeWandItem extends Item {
 
         // Цель могла исчезнуть или "приземлиться" сама между первым и вторым кликом
         if (!closest.isAlive() || !closest.getUUID().equals(targetId)) {
-            tag.remove("FreezeTarget");
-            tag.remove("FreezeTargetTick");
+            CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> {
+                t.remove("FreezeTarget");
+                t.remove("FreezeTargetTick");
+            });
             if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
                 serverPlayer.sendSystemMessage(
                         Component.literal("Подсвеченная конструкция больше недоступна — подсветка сброшена. Кликните ещё раз, чтобы выбрать заново.")
@@ -251,8 +256,10 @@ public class FreezeWandItem extends Item {
         }
 
         // ШАГ 2: подтверждение — реальная разборка
-        tag.remove("FreezeTarget");
-        tag.remove("FreezeTargetTick");
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> {
+            t.remove("FreezeTarget");
+            t.remove("FreezeTargetTick");
+        });
 
         Vec3 dissolvePos = closest.position();
         spawnFrostParticles(serverLevel, dissolvePos, 60);

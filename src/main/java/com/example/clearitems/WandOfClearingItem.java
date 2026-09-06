@@ -1,6 +1,7 @@
 package com.example.clearitems;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +16,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.phys.AABB;
@@ -54,17 +56,17 @@ public class WandOfClearingItem extends Item {
         super.appendHoverText(stack, context, tooltip, flagIn);
     }
 
-    /** Читает текущий настроенный радиус из NBT предмета (или дефолт). */
+    /** Читает текущий настроенный радиус из данных предмета (или дефолт). */
     public static int getRadius(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(NBT_RADIUS)) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (tag.contains(NBT_RADIUS)) {
             return tag.getInt(NBT_RADIUS);
         }
         return DEFAULT_RADIUS;
     }
 
     private static void setRadius(ItemStack stack, int radius) {
-        stack.getOrCreateTag().putInt(NBT_RADIUS, radius);
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(NBT_RADIUS, radius));
     }
 
     private static int nextRadius(int current) {
