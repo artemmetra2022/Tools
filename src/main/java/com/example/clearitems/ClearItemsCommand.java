@@ -34,6 +34,7 @@ public class ClearItemsCommand {
     private static int execute(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         int totalRemoved = 0;
+        int skipped = 0;
 
         // Проходим по всем измерениям сервера (Overworld, Nether, End и кастомные)
         for (ServerLevel level : source.getServer().getAllLevels()) {
@@ -44,14 +45,21 @@ public class ClearItemsCommand {
             );
 
             for (ItemEntity item : items) {
+                // Предметы из whitelist конфига не трогаем
+                if (ClearItemsConfig.isWhitelisted(item.getItem())) {
+                    skipped++;
+                    continue;
+                }
                 item.discard(); // корректное удаление сущности с сервера
                 totalRemoved++;
             }
         }
 
         int finalCount = totalRemoved;
+        int finalSkipped = skipped;
         source.sendSuccess(
-                () -> Component.literal("Удалено предметов с земли: " + finalCount),
+                () -> Component.literal("Удалено предметов с земли: " + finalCount
+                        + (finalSkipped > 0 ? " (пропущено по whitelist: " + finalSkipped + ")" : "")),
                 true
         );
 
@@ -73,17 +81,25 @@ public class ClearItemsCommand {
         List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, searchBox);
 
         int removed = 0;
+        int skipped = 0;
         for (ItemEntity item : items) {
             // AABB — куб, а нам нужна сфера: проверяем точное расстояние
             if (item.position().distanceToSqr(center) <= (double) radius * radius) {
+                // Предметы из whitelist конфига не трогаем
+                if (ClearItemsConfig.isWhitelisted(item.getItem())) {
+                    skipped++;
+                    continue;
+                }
                 item.discard();
                 removed++;
             }
         }
 
         int finalCount = removed;
+        int finalSkipped = skipped;
         source.sendSuccess(
-                () -> Component.literal("Удалено предметов с земли (радиус " + radius + "): " + finalCount),
+                () -> Component.literal("Удалено предметов с земли (радиус " + radius + "): " + finalCount
+                        + (finalSkipped > 0 ? " (пропущено по whitelist: " + finalSkipped + ")" : "")),
                 true
         );
 

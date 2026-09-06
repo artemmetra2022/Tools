@@ -124,9 +124,15 @@ public class WandOfClearingItem extends Item {
         List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, searchBox);
 
         int removed = 0;
+        int skipped = 0;
         for (ItemEntity item : items) {
             // Дополнительно проверяем точное расстояние (AABB — куб, а нам нужна сфера)
             if (item.position().distanceToSqr(center) <= radius * radius) {
+                // Предметы из whitelist конфига не трогаем
+                if (ClearItemsConfig.isWhitelisted(item.getItem())) {
+                    skipped++;
+                    continue;
+                }
                 // Зелёное свечение на месте каждого удаляемого предмета
                 if (level instanceof ServerLevel serverLevel) {
                     spawnClearParticles(serverLevel, item.position());
@@ -144,8 +150,10 @@ public class WandOfClearingItem extends Item {
         // Звук и сообщение игроку, если это игрок
         if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
             int finalRemoved = removed;
+            int finalSkipped = skipped;
             serverPlayer.sendSystemMessage(
-                    Component.literal("Жезл Очистки удалил предметов: " + finalRemoved + " (радиус " + (int) radius + " блоков)")
+                    Component.literal("Жезл Очистки удалил предметов: " + finalRemoved + " (радиус " + (int) radius + " блоков)"
+                            + (finalSkipped > 0 ? " — пропущено по whitelist: " + finalSkipped : ""))
             );
         }
 

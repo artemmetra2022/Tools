@@ -4,6 +4,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
@@ -17,6 +18,9 @@ public class ClearItemsMod {
         ModItems.register(modEventBus);
         // Добавляем предметы мода в подходящую вкладку творческого инвентаря
         modEventBus.addListener(ModCreativeTabs::onBuildCreativeTab);
+
+        // Whitelist предметов, которые нельзя удалять с земли (server config)
+        modContainer.registerConfig(ModConfig.Type.SERVER, ClearItemsConfig.SPEC);
 
         // Регистрируем обработчик события команд на общей шине событий игры
         NeoForge.EVENT_BUS.register(this);
