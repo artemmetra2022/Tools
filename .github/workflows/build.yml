@@ -24,3 +24,10 @@ jobs:
 
       - name: Build
         run: gradle --no-daemon build
+
+      - name: Upload mod jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: clearitems-${{ github.sha }}
+          path: build/libs/*.jar
+          if-no-files-found: error
