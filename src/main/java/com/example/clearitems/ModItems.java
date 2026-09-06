@@ -2,7 +2,7 @@ package com.example.clearitems;
 
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
@@ -14,7 +14,7 @@ public class ModItems {
             DeferredRegister.createItems(ClearItemsMod.MOD_ID);
 
     // Жезл Очистки — по ПКМ по блоку удаляет все ItemEntity в радиусе 50 блоков
-    public static final DeferredHolder<Item, WandOfClearingItem> WAND_OF_CLEARING =
+    public static final DeferredItem<WandOfClearingItem> WAND_OF_CLEARING =
             ITEMS.registerItem(
                     "wand_of_clearing",
                     WandOfClearingItem::new,
@@ -24,7 +24,7 @@ public class ModItems {
 
     // Жезл Заморозки — по ПКМ по блоку разбирает ближайшую конструкцию
     // (contraption) мода Create обратно в настоящие блоки в мире
-    public static final DeferredHolder<Item, FreezeWandItem> FREEZE_WAND =
+    public static final DeferredItem<FreezeWandItem> FREEZE_WAND =
             ITEMS.registerItem(
                     "freeze_wand",
                     FreezeWandItem::new,

@@ -17,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -120,7 +121,7 @@ public class FreezeWandItem extends Item {
                             Component.literal("Подсветка снята, разборка отменена."),
                             true
                     );
-                    level.playSound(null, player.blockPosition(), SoundEvents.FIRE_EXTINGUISH.value(),
+                    level.playSound(null, player.blockPosition(), SoundEvents.FIRE_EXTINGUISH,
                             SoundSource.PLAYERS, 0.6F, 1.6F);
                 } else {
                     int newRadius = nextRadius(getRadius(stack));
@@ -220,7 +221,7 @@ public class FreezeWandItem extends Item {
             applyGlow(closest, (int) CONFIRM_WINDOW_TICKS);
             spawnFrostParticles(serverLevel, closest.position(), 30);
 
-            level.playSound(null, clickedPos, SoundEvents.GLASS_BREAK.value(),
+            level.playSound(null, clickedPos, SoundEvents.GLASS_BREAK,
                     SoundSource.PLAYERS, 0.5F, 1.8F);
 
             if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
@@ -255,7 +256,7 @@ public class FreezeWandItem extends Item {
 
         Vec3 dissolvePos = closest.position();
         spawnFrostParticles(serverLevel, dissolvePos, 60);
-        level.playSound(null, clickedPos, SoundEvents.GLASS_BREAK.value(),
+        level.playSound(null, clickedPos, SoundEvents.GLASS_BREAK,
                 SoundSource.PLAYERS, 1.0F, 0.7F);
 
         closest.disassemble();
