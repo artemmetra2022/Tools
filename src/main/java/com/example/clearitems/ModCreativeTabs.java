@@ -11,10 +11,11 @@ import net.minecraft.world.item.CreativeModeTabs;
 public class ModCreativeTabs {
 
     public static void onBuildCreativeTab(BuildCreativeModeTabContentsEvent event) {
-        // Кладём Жезл Очистки и Жезл Заморозки во вкладку "Инструменты и утилиты"
+        // Кладём все жезлы мода во вкладку "Инструменты и утилиты"
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModItems.WAND_OF_CLEARING);
             event.accept(ModItems.FREEZE_WAND);
+            event.accept(ModItems.MAGNET_WAND);
         }
     }
 }

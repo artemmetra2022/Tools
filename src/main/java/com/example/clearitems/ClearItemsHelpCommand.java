@@ -29,11 +29,20 @@ public class ClearItemsHelpCommand {
         send(source, "  ПКМ по блоку — удаляет все предметы на земле в радиусе.", ChatFormatting.GRAY, false);
         send(source, "  Shift+ПКМ в воздухе — переключить радиус действия.", ChatFormatting.GRAY, false);
 
+        send(source, "Жезл Магнита", ChatFormatting.LIGHT_PURPLE, true);
+        send(source, "  ПКМ по блоку — притягивает все предметы с земли в радиусе к вам.", ChatFormatting.GRAY, false);
+        send(source, "  (подбор обычный — стеки складываются, whitelist не трогается).", ChatFormatting.GRAY, false);
+        send(source, "  Shift+ПКМ в воздухе — переключить радиус действия.", ChatFormatting.GRAY, false);
+
         send(source, "Жезл Заморозки", ChatFormatting.AQUA, true);
         send(source, "  ПКМ по блоку — подсвечивает ближайшую конструкцию Create.", ChatFormatting.GRAY, false);
         send(source, "  Повторный ПКМ (в течение 5 сек) — разбирает её в блоки.", ChatFormatting.GRAY, false);
         send(source, "  Shift+ПКМ в воздухе — переключить радиус поиска, либо", ChatFormatting.GRAY, false);
         send(source, "  отменить текущую подсветку, если она активна.", ChatFormatting.GRAY, false);
+
+        send(source, "Жезлы: прочность и кулдаун", ChatFormatting.YELLOW, true);
+        send(source, "  Жезлы изнашиваются и уходят в кулдаун после срабатывания", ChatFormatting.GRAY, false);
+        send(source, "  (настраивается админом в конфиге; в креативе не изнашиваются).", ChatFormatting.GRAY, false);
 
         send(source, "Команды", ChatFormatting.YELLOW, true);
         send(source, "  /clear1 — удалить все предметы на земле во всём мире (требует прав оператора).", ChatFormatting.GRAY, false);

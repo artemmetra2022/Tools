@@ -51,9 +51,26 @@ public class WandOfClearingItem extends Item {
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("item.clearitems.wand_of_clearing.tooltip.radius", getRadius(stack))
                 .withStyle(ChatFormatting.DARK_GREEN));
+        tooltip.add(WandUsage.tooltipDurability(stack));
         tooltip.add(Component.translatable("item.clearitems.wand_of_clearing.tooltip.hint")
                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         super.appendHoverText(stack, context, tooltip, flagIn);
+    }
+
+    // Полоска износа (как у инструментов) — только когда в конфиге включена прочность
+    @Override
+    public boolean isBarVisible(ItemStack stack) {
+        return WandUsage.isBarVisible(stack) || super.isBarVisible(stack);
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        return WandUsage.isBarVisible(stack) ? WandUsage.getBarWidth(stack) : super.getBarWidth(stack);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        return WandUsage.isBarVisible(stack) ? WandUsage.getBarColor(stack) : super.getBarColor(stack);
     }
 
     /** Читает текущий настроенный радиус из данных предмета (или дефолт). */
@@ -142,19 +159,35 @@ public class WandOfClearingItem extends Item {
             }
         }
 
+        ServerPlayer serverPlayer = context.getPlayer() instanceof ServerPlayer sp ? sp : null;
+
+        // Расход прочности и кулдаун — только когда жезл реально что-то удалил
+        if (removed > 0 && serverPlayer != null) {
+            int durabilityLeft = damageAndReport(serverPlayer, stack, context.getHand());
+
+            String summary = "Жезл Очистки удалил предметов: " + removed
+                    + " (радиус " + (int) radius + " блоков)";
+            if (skipped > 0) {
+                summary += " — пропущено по whitelist: " + skipped;
+            }
+            serverPlayer.sendSystemMessage(Component.literal(summary));
+
+            if (durabilityLeft >= 0) {
+                WandUsage.sendUsesLeft(serverPlayer, durabilityLeft, ClearItemsConfig.getWandDurability());
+            }
+
+            WandUsage.applyCooldown(serverPlayer, stack);
+        } else if (serverPlayer != null) {
+            String summary = "Жезл Очистки удалил предметов: 0 (радиус " + (int) radius + " блоков)";
+            if (skipped > 0) {
+                summary += " — пропущено по whitelist: " + skipped;
+            }
+            serverPlayer.sendSystemMessage(Component.literal(summary));
+        }
+
         // Кольцо частиц по границе радиуса — наглядно показывает зону действия
         if (level instanceof ServerLevel serverLevel) {
             spawnRadiusRing(serverLevel, center, radius);
-        }
-
-        // Звук и сообщение игроку, если это игрок
-        if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
-            int finalRemoved = removed;
-            int finalSkipped = skipped;
-            serverPlayer.sendSystemMessage(
-                    Component.literal("Жезл Очистки удалил предметов: " + finalRemoved + " (радиус " + (int) radius + " блоков)"
-                            + (finalSkipped > 0 ? " — пропущено по whitelist: " + finalSkipped : ""))
-            );
         }
 
         level.playSound(
@@ -202,5 +235,25 @@ public class WandOfClearingItem extends Item {
                     0.0
             );
         }
+    }
+
+    /**
+     * Изнашивает жезл на одно использование. Возвращает, сколько использований
+     * осталось (>= 0), или -1, если износ выключен в конфиге (durability = 0)
+     * либо жезл только что сломался (сообщение об этом уже отправлено).
+     */
+    private static int damageAndReport(ServerPlayer player, ItemStack stack, net.minecraft.world.InteractionHand hand) {
+        if (!WandUsage.durabilityEnabled() || player.isCreative()) {
+            return -1;
+        }
+        net.minecraft.world.entity.EquipmentSlot slot = hand == net.minecraft.world.InteractionHand.OFF_HAND
+                ? net.minecraft.world.entity.EquipmentSlot.OFFHAND
+                : net.minecraft.world.entity.EquipmentSlot.MAINHAND;
+        boolean broken = WandUsage.damageOnce(player, stack, slot);
+        if (broken) {
+            player.sendSystemMessage(Component.literal("Жезл Очистки сломался!"));
+            return -1;
+        }
+        return ClearItemsConfig.getWandDurability() - WandUsage.getUses(stack);
     }
 }

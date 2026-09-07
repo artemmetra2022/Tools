@@ -8,5 +8,14 @@
   "item.clearitems.freeze_wand.tooltip": "Останавливает и разбирает конструкцию Create в блоки.",
   "item.clearitems.freeze_wand.tooltip.radius": "Радиус поиска: %s блоков",
   "item.clearitems.freeze_wand.tooltip.pending": "Есть подсвеченная цель — подтвердите или отмените",
-  "item.clearitems.freeze_wand.tooltip.hint": "ПКМ — подсветить, ПКМ ещё раз — разобрать"
+  "item.clearitems.freeze_wand.tooltip.hint": "ПКМ — подсветить, ПКМ ещё раз — разобрать",
+
+  "item.clearitems.magnet_wand": "Жезл Магнита",
+  "item.clearitems.magnet_wand.tooltip": "Притягивает к вам предметы, лежащие на земле вокруг точки клика.",
+  "item.clearitems.magnet_wand.tooltip.radius": "Радиус: %s блоков",
+  "item.clearitems.magnet_wand.tooltip.hint": "Shift+ПКМ в воздухе — сменить радиус",
+
+  "message.clearitems.wand.uses_left": "Осталось использований: %s из %s",
+  "message.clearitems.wand.durability": "Прочность: %s из %s использований",
+  "message.clearitems.wand.unbreakable": "Не изнашивается"
 }

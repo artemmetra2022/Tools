@@ -79,9 +79,26 @@ public class FreezeWandItem extends Item {
                     .withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC));
         }
 
+        tooltip.add(WandUsage.tooltipDurability(stack));
         tooltip.add(Component.translatable("item.clearitems.freeze_wand.tooltip.hint")
                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         super.appendHoverText(stack, context, tooltip, flagIn);
+    }
+
+    // Полоска износа (как у инструментов) — только когда в конфиге включена прочность
+    @Override
+    public boolean isBarVisible(ItemStack stack) {
+        return WandUsage.isBarVisible(stack) || super.isBarVisible(stack);
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        return WandUsage.isBarVisible(stack) ? WandUsage.getBarWidth(stack) : super.getBarWidth(stack);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        return WandUsage.isBarVisible(stack) ? WandUsage.getBarColor(stack) : super.getBarColor(stack);
     }
 
     public static int getRadius(ItemStack stack) {
@@ -269,6 +286,24 @@ public class FreezeWandItem extends Item {
         closest.disassemble();
 
         if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
+            // Прочность и кулдаун списываются только за реальную разборку,
+            // подсветка (шаг 1) бесплатна
+            if (WandUsage.durabilityEnabled() && !serverPlayer.isCreative()) {
+                net.minecraft.world.entity.EquipmentSlot slot = context.getHand() == InteractionHand.OFF_HAND
+                        ? net.minecraft.world.entity.EquipmentSlot.OFFHAND
+                        : net.minecraft.world.entity.EquipmentSlot.MAINHAND;
+                boolean broken = WandUsage.damageOnce(serverPlayer, stack, slot);
+                if (broken) {
+                    serverPlayer.sendSystemMessage(Component.literal(
+                            "Жезл Заморозки сломался после разборки!"));
+                } else {
+                    WandUsage.sendUsesLeft(serverPlayer,
+                            ClearItemsConfig.getWandDurability() - WandUsage.getUses(stack),
+                            ClearItemsConfig.getWandDurability());
+                }
+            }
+            WandUsage.applyCooldown(serverPlayer, stack);
+
             serverPlayer.sendSystemMessage(
                     Component.literal("Конструкция заморожена и разобрана в блоки!")
             );

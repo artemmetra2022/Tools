@@ -32,6 +32,16 @@ public class ModItems {
                             .stacksTo(1)
             );
 
+    // Жезл Магнита — по ПКМ по блоку притягивает все лежащие предметы
+    // в радиусе к игроку (подбор — ванильный, со стеками и merge)
+    public static final DeferredItem<MagnetWandItem> MAGNET_WAND =
+            ITEMS.registerItem(
+                    "magnet_wand",
+                    MagnetWandItem::new,
+                    new Item.Properties()
+                            .stacksTo(1)
+            );
+
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
     }

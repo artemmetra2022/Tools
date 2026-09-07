@@ -8,5 +8,14 @@
   "item.clearitems.freeze_wand.tooltip": "Stops and disassembles a Create contraption into blocks.",
   "item.clearitems.freeze_wand.tooltip.radius": "Search radius: %s blocks",
   "item.clearitems.freeze_wand.tooltip.pending": "A contraption is highlighted - confirm or cancel",
-  "item.clearitems.freeze_wand.tooltip.hint": "Right-click to highlight, right-click again to disassemble"
+  "item.clearitems.freeze_wand.tooltip.hint": "Right-click to highlight, right-click again to disassemble",
+
+  "item.clearitems.magnet_wand": "Magnet Wand",
+  "item.clearitems.magnet_wand.tooltip": "Pulls dropped items on the ground near the clicked spot towards you.",
+  "item.clearitems.magnet_wand.tooltip.radius": "Radius: %s blocks",
+  "item.clearitems.magnet_wand.tooltip.hint": "Shift+Right-click in the air to change radius",
+
+  "message.clearitems.wand.uses_left": "Uses left: %s / %s",
+  "message.clearitems.wand.durability": "Durability: %s / %s uses",
+  "message.clearitems.wand.unbreakable": "Does not wear out"
 }
